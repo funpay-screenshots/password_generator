@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Password Generator</title>
+
+<style>
+    body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #f5f5f7;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .card {
+        background: white;
+        padding: 40px;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        width: 360px;
+        text-align: center;
+    }
+
+    h1 {
+        margin-bottom: 24px;
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+    input[type="number"] {
+        width: 80px;
+        padding: 10px;
+        border-radius: 12px;
+        border: 1px solid #ddd;
+        text-align: center;
+        font-size: 16px;
+    }
+
+    .password {
+        margin-top: 20px;
+        font-size: 18px;
+        word-break: break-all;
+        background: #f0f0f3;
+        padding: 12px;
+        border-radius: 16px;
+        user-select: all;
+    }
+
+    button {
+        margin-top: 20px;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 20px;
+        font-size: 15px;
+        cursor: pointer;
+        background: black;
+        color: white;
+        transition: 0.2s;
+    }
+
+    button:hover {
+        opacity: 0.85;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h1>Генератор паролей</h1>
+    <div>
+        Длина:
+        <input type="number" id="length" value="10" min="6" max="64">
+    </div>
+
+    <div class="password" id="result">Нажми кнопку</div>
+
+    <button onclick="generatePassword()">Сгенерировать</button>
+</div>
+
+<script>
+function generatePassword() {
+    const lengthInput = document.getElementById("length");
+    let length = parseInt(lengthInput.value);
+
+    if (length < 6) length = 6;
+
+    const upper = "ABCDEFGHKNOPQRSTUVWXYZ"; // без I, J, L
+    const lower = "abcdefghkmnopqrstuvwxyz"; // без i, l
+    const digits = "0123456789";
+    const specials = "& #%$@?".replace(" ", ""); // разрешённые
+
+    const allMiddle = upper + lower + digits + specials;
+
+    function randomChar(set) {
+        return set[Math.floor(Math.random() * set.length)];
+    }
+
+    function isValid(password) {
+        if (!/[A-Z]/.test(password)) return false;
+        if (!/[a-z]/.test(password)) return false;
+        if (!/[0-9]/.test(password)) return false;
+        if (!/[&#%$@?]/.test(password)) return false;
+
+        let upperCount = (password.match(/[A-Z]/g) || []).length;
+        if (upperCount > Math.floor(length * 2/3)) return false;
+
+        for (let i = 1; i < password.length; i++) {
+            if (password[i] === password[i-1]) return false;
+        }
+
+        return true;
+    }
+
+    let password = "";
+
+    do {
+        let chars = [];
+
+        // Первый символ — заглавная (без J)
+        chars.push(randomChar(upper));
+
+        // Средние символы
+        while (chars.length < length - 1) {
+            let next = randomChar(allMiddle);
+            if (next !== chars[chars.length - 1]) {
+                chars.push(next);
+            }
+        }
+
+        // Последний символ — заглавная (без J)
+        let lastChar;
+        do {
+            lastChar = randomChar(upper);
+        } while (lastChar === chars[chars.length - 1]);
+
+        chars.push(lastChar);
+
+        password = chars.join("");
+
+    } while (!isValid(password));
+
+    document.getElementById("result").textContent = password;
+}
+</script>
+
+</body>
+</html>
