@@ -237,45 +237,46 @@ function generatePassword() {
     const upper = "ABCDEFGHKNOPQRSTUVWXYZ";
     const lower = "abcdefghkmnopqrstuvwxyz";
     const digits = "0123456789";
-    const specials = "&#%$@?";
-    const nonSpecial = upper + lower + digits;
-    const allChars = nonSpecial + specials;
+    const specials = "&#%$@";
+    const forbiddenEdge = "VTYJ";
+
+    const allMiddle = upper + lower + digits + specials;
 
     function randomChar(set) {
         return set[Math.floor(Math.random() * set.length)];
     }
 
-    function isSpecial(c) {
-        return specials.includes(c);
-    }
-
     function isValid(password) {
-        // Базовые требования: все типы символов присутствуют
         if (!/[A-Z]/.test(password)) return false;
         if (!/[a-z]/.test(password)) return false;
         if (!/[0-9]/.test(password)) return false;
-        if (![...specials].some(s => password.includes(s))) return false;
+        if (!/[&#%$@?]/.test(password)) return false;
 
-        // Не более 2/3 заглавных
+        const digitCount = (password.match(/[0-9]/g) || []).length;
+        if (digitCount < 2) return false;
+        if (digitCount > 2) return false;
+
+        const lowerCount = (password.match(/[a-z]/g) || []).length;
+        if (lowerCount < 2) return false;
+
         const upperCount = (password.match(/[A-Z]/g) || []).length;
         if (upperCount > Math.floor(length * 2 / 3)) return false;
 
-        // Нет двух одинаковых символов подряд
+        const specMatches = password.match(/[&#%$@]/g) || [];
+        if (specMatches.length > 2) return false;
+
+        if (specMatches.length !== new Set(specMatches).size) return false;
+
+        for (let i = 1; i < password.length; i++) {
+            if (specials.includes(password[i]) && specials.includes(password[i - 1])) return false;
+        }
+
         for (let i = 1; i < password.length; i++) {
             if (password[i] === password[i - 1]) return false;
         }
 
-        // Спецсимволы не стоят подряд друг за другом
-        for (let i = 1; i < password.length; i++) {
-            if (isSpecial(password[i]) && isSpecial(password[i - 1])) return false;
-        }
-
-        // Не более 2 спецсимволов в пароле
-        const usedSpecials = [...password].filter(isSpecial);
-        if (usedSpecials.length > 2) return false;
-
-        // Спецсимволы не повторяются
-        if (new Set(usedSpecials).size !== usedSpecials.length) return false;
+        if (forbiddenEdge.includes(password[0])) return false;
+        if (forbiddenEdge.includes(password[password.length - 1])) return false;
 
         return true;
     }
@@ -284,39 +285,118 @@ function generatePassword() {
 
     do {
         let chars = [];
-        chars.push(randomChar(upper));
+        let usedSpecials = new Set();
+        let digitCount = 0;
 
+        // Первый символ — заглавная, не из forbiddenEdge
+        let firstChar;
+        do {
+            firstChar = randomChar(upper);
+        } while (forbiddenEdge.includes(firstChar));
+        chars.push(firstChar);
+
+        // Обязательные символы: ровно 2 цифры, 1 спецсимвол, 2 строчных
+        const requiredSpec = randomChar(specials);
+        usedSpecials.add(requiredSpec);
+
+        const d1 = randomChar(digits);
+        let d2;
+        do { d2 = randomChar(digits); } while (d2 === d1);
+
+        const required = [
+            d1,
+            d2,
+            requiredSpec,
+            randomChar(lower),
+            randomChar(lower),
+        ];
+
+        // Перемешиваем обязательные символы
+        for (let i = required.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [required[i], required[j]] = [required[j], required[i]];
+        }
+
+        // Вставляем обязательные символы
+        for (const req of required) {
+            if (chars.length >= length - 1) break;
+
+            if (digits.includes(req)) {
+                if (digitCount >= 2) {
+                    let fallback;
+                    do {
+                        fallback = randomChar(upper + lower);
+                    } while (fallback === chars[chars.length - 1]);
+                    chars.push(fallback);
+                    continue;
+                }
+                digitCount++;
+            }
+
+            if (specials.includes(req)) {
+                if (usedSpecials.size >= 2 || specials.includes(chars[chars.length - 1])) {
+                    let fallback;
+                    do {
+                        fallback = randomChar(upper + lower);
+                    } while (fallback === chars[chars.length - 1]);
+                    chars.push(fallback);
+                    continue;
+                }
+                usedSpecials.add(req);
+            }
+
+            if (req === chars[chars.length - 1]) {
+                let pad;
+                do {
+                    pad = randomChar(allMiddle);
+                } while (
+                    pad === chars[chars.length - 1] ||
+                    (digits.includes(pad) && digitCount >= 2) ||
+                    (specials.includes(pad) && (usedSpecials.size >= 2 || specials.includes(chars[chars.length - 1]))) ||
+                    (specials.includes(pad) && usedSpecials.has(pad))
+                );
+                if (digits.includes(pad)) digitCount++;
+                if (specials.includes(pad)) usedSpecials.add(pad);
+                if (chars.length < length - 1) chars.push(pad);
+            }
+
+            if (chars.length < length - 1) chars.push(req);
+        }
+
+        // Заполняем оставшиеся позиции
         while (chars.length < length - 1) {
-            const prev = chars[chars.length - 1];
-            const prevIsSpecial = isSpecial(prev);
-            const usedSpecialsCount = chars.filter(isSpecial).length;
-
-            // Спецсимвол недоступен если: предыдущий тоже спецсимвол, или уже использовано 2
-            const canUseSpecial = !prevIsSpecial && usedSpecialsCount < 2;
-            const pool = canUseSpecial ? allChars : nonSpecial;
-
             let next;
-            let attempts = 0;
             do {
-                next = randomChar(pool);
-                attempts++;
-                if (attempts > 200) { next = randomChar(nonSpecial); break; }
-            } while (
-                next === prev ||
-                // Не допускаем повтор уже использованного спецсимвола
-                (isSpecial(next) && chars.some(c => c === next))
-            );
+                next = randomChar(allMiddle);
 
+                if (digits.includes(next) && digitCount >= 2) continue;
+
+                if (specials.includes(next)) {
+                    if (usedSpecials.size >= 2) continue;
+                    if (specials.includes(chars[chars.length - 1])) continue;
+                    if (usedSpecials.has(next)) continue;
+                }
+
+                if (next === chars[chars.length - 1]) continue;
+
+                break;
+            } while (true);
+
+            if (digits.includes(next)) digitCount++;
+            if (specials.includes(next)) usedSpecials.add(next);
             chars.push(next);
         }
 
-        // Последний символ — заглавная буква
+        // Последний символ — заглавная, не повторяет предыдущий и не forbidden
         let lastChar;
         do {
             lastChar = randomChar(upper);
-        } while (lastChar === chars[chars.length - 1]);
-        chars.push(lastChar);
+        } while (
+            lastChar === chars[chars.length - 1] ||
+            forbiddenEdge.includes(lastChar)
+        );
 
+        chars.push(lastChar);
         password = chars.join("");
 
     } while (!isValid(password));
