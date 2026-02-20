@@ -64,19 +64,54 @@ h1 {
     color: var(--text);
 }
 
-input[type="number"] {
-    width: 55px;
-    padding: 8px;
-    border-radius: 12px;
-    border: 1px solid var(--border);
-    text-align: center;
-    font-size: 15px;
-    background: var(--card);
+.length-label {
     color: var(--text);
 }
 
-.length-label {
+/* Обёртка для кастомного числового поля */
+.number-input-wrap {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--card);
+}
+
+.number-input-wrap input[type="number"] {
+    width: 40px;
+    padding: 8px 4px;
+    border: none;
+    text-align: center;
+    font-size: 15px;
+    background: transparent;
     color: var(--text);
+    -moz-appearance: textfield;
+    outline: none;
+}
+
+.number-input-wrap input[type="number"]::-webkit-inner-spin-button,
+.number-input-wrap input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.num-btn {
+    background: var(--card);
+    border: none;
+    color: var(--text);
+    font-size: 14px;
+    padding: 0 7px;
+    height: 100%;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    transition: background 0.15s;
+}
+
+.num-btn:hover {
+    background: var(--muted);
 }
 
 .password-container {
@@ -121,6 +156,14 @@ input[type="number"] {
     transform: translateY(-50%) scale(1.08);
 }
 
+/* SVG иконки кнопки копирования */
+.copy-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: var(--text);
+    stroke: var(--text);
+}
+
 button.generate {
     margin-top: 20px;
     padding: 12px 20px;
@@ -137,7 +180,7 @@ button.generate:hover {
     opacity: 0.85;
 }
 
-svg {
+.theme-toggle svg {
     width: 18px;
     height: 18px;
     fill: var(--text);
@@ -156,14 +199,18 @@ svg {
 
     <div>
         <span class="length-label">Длина:</span>
-        <input type="number" id="length" value="10" min="6" max="64">
+        <span class="number-input-wrap">
+            <button class="num-btn" onclick="changeLength(-1)">−</button>
+            <input type="number" id="length" value="10" min="6" max="64">
+            <button class="num-btn" onclick="changeLength(1)">+</button>
+        </span>
     </div>
 
     <div class="password-container">
         <div class="password" id="result"></div>
         <button class="copy-btn" onclick="copyPassword()">
             <svg id="copyIcon" viewBox="0 0 24 24">
-                <path d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/>
+                <path fill="var(--text)" stroke="none" d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/>
             </svg>
         </button>
     </div>
@@ -172,6 +219,14 @@ svg {
 </div>
 
 <script>
+function changeLength(delta) {
+    const input = document.getElementById("length");
+    let val = parseInt(input.value) + delta;
+    if (val < 6) val = 6;
+    if (val > 64) val = 64;
+    input.value = val;
+}
+
 function generatePassword() {
     const lengthInput = document.getElementById("length");
     let length = parseInt(lengthInput.value);
@@ -234,10 +289,11 @@ function copyPassword() {
     navigator.clipboard.writeText(text);
 
     const icon = document.getElementById("copyIcon");
-    icon.innerHTML = `<polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    // Галочка — только stroke, fill none, цвет через currentColor (наследует --text через CSS)
+    icon.innerHTML = `<polyline points="20 6 9 17 4 12" style="stroke: var(--text); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round;"/>`;
 
     setTimeout(() => {
-        icon.innerHTML = `<path d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/>`;
+        icon.innerHTML = `<path fill="var(--text)" stroke="none" d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/>`;
     }, 1500);
 }
 
@@ -249,10 +305,7 @@ function toggleTheme() {
 function updateIcon() {
     const icon = document.getElementById("themeIcon");
     if (document.body.classList.contains("dark")) {
-        icon.innerHTML = `
-            <path d="M21 12.79A9 9 0 0 1 11.21 3
-            7 7 0 1 0 21 12.79z"/>
-        `;
+        icon.innerHTML = `<path d="M21 12.79A9 9 0 0 1 11.21 3 7 7 0 1 0 21 12.79z"/>`;
     } else {
         icon.innerHTML = `
             <circle cx="12" cy="12" r="5"/>
@@ -267,9 +320,9 @@ function updateIcon() {
             <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
             </g>
         `;
-        icon.querySelectorAll("line").forEach(l=>{
-            l.setAttribute("stroke","currentColor");
-            l.setAttribute("stroke-width","2");
+        icon.querySelectorAll("line").forEach(l => {
+            l.setAttribute("stroke", "currentColor");
+            l.setAttribute("stroke-width", "2");
         });
     }
 }
