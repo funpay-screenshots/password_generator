@@ -74,13 +74,13 @@ h1 {
     border: 1px solid var(--border);
     border-radius: 12px;
     background: var(--card);
-    padding: 2px 4px;
-    gap: 2px;
+    padding: 2px 3px;
+    gap: 0px;
 }
 
 .number-input-wrap input[type="number"] {
-    width: 36px;
-    padding: 6px 2px;
+    width: 24px;
+    padding: 6px 0;
     border: none;
     text-align: center;
     font-size: 15px;
@@ -237,25 +237,46 @@ function generatePassword() {
     const upper = "ABCDEFGHKNOPQRSTUVWXYZ";
     const lower = "abcdefghkmnopqrstuvwxyz";
     const digits = "0123456789";
-    const specials = "& #%$@?".replace(" ", "");
-    const allMiddle = upper + lower + digits + specials;
+    const specials = "&#%$@?";
+    const nonSpecial = upper + lower + digits;
+    const allChars = nonSpecial + specials;
 
     function randomChar(set) {
         return set[Math.floor(Math.random() * set.length)];
     }
 
+    function isSpecial(c) {
+        return specials.includes(c);
+    }
+
     function isValid(password) {
+        // Базовые требования: все типы символов присутствуют
         if (!/[A-Z]/.test(password)) return false;
         if (!/[a-z]/.test(password)) return false;
         if (!/[0-9]/.test(password)) return false;
-        if (!/[&#%$@?]/.test(password)) return false;
+        if (![...specials].some(s => password.includes(s))) return false;
 
-        let upperCount = (password.match(/[A-Z]/g) || []).length;
-        if (upperCount > Math.floor(length * 2/3)) return false;
+        // Не более 2/3 заглавных
+        const upperCount = (password.match(/[A-Z]/g) || []).length;
+        if (upperCount > Math.floor(length * 2 / 3)) return false;
 
+        // Нет двух одинаковых символов подряд
         for (let i = 1; i < password.length; i++) {
-            if (password[i] === password[i-1]) return false;
+            if (password[i] === password[i - 1]) return false;
         }
+
+        // Спецсимволы не стоят подряд друг за другом
+        for (let i = 1; i < password.length; i++) {
+            if (isSpecial(password[i]) && isSpecial(password[i - 1])) return false;
+        }
+
+        // Не более 2 спецсимволов в пароле
+        const usedSpecials = [...password].filter(isSpecial);
+        if (usedSpecials.length > 2) return false;
+
+        // Спецсимволы не повторяются
+        if (new Set(usedSpecials).size !== usedSpecials.length) return false;
+
         return true;
     }
 
@@ -266,18 +287,36 @@ function generatePassword() {
         chars.push(randomChar(upper));
 
         while (chars.length < length - 1) {
-            let next = randomChar(allMiddle);
-            if (next !== chars[chars.length - 1]) {
-                chars.push(next);
-            }
+            const prev = chars[chars.length - 1];
+            const prevIsSpecial = isSpecial(prev);
+            const usedSpecialsCount = chars.filter(isSpecial).length;
+
+            // Спецсимвол недоступен если: предыдущий тоже спецсимвол, или уже использовано 2
+            const canUseSpecial = !prevIsSpecial && usedSpecialsCount < 2;
+            const pool = canUseSpecial ? allChars : nonSpecial;
+
+            let next;
+            let attempts = 0;
+            do {
+                next = randomChar(pool);
+                attempts++;
+                if (attempts > 200) { next = randomChar(nonSpecial); break; }
+            } while (
+                next === prev ||
+                // Не допускаем повтор уже использованного спецсимвола
+                (isSpecial(next) && chars.some(c => c === next))
+            );
+
+            chars.push(next);
         }
 
+        // Последний символ — заглавная буква
         let lastChar;
         do {
             lastChar = randomChar(upper);
         } while (lastChar === chars[chars.length - 1]);
-
         chars.push(lastChar);
+
         password = chars.join("");
 
     } while (!isValid(password));
