@@ -64,24 +64,21 @@ h1 {
     color: var(--text);
 }
 
-/* правка 3: border совпадает с фоном карточки */
 input[type="number"] {
     width: 55px;
     padding: 8px;
     border-radius: 12px;
-    border: 1px solid var(--card);
+    border: 1px solid var(--border);
     text-align: center;
     font-size: 15px;
-    background: transparent;
+    background: var(--card);
     color: var(--text);
 }
 
-/* правка 4: слово "длина" цвет как у пароля */
 .length-label {
     color: var(--text);
 }
 
-/* правка 2: поле пароля в 1.5 раза уже (360px / 1.5 = 240px, минус padding карточки) */
 .password-container {
     position: relative;
     margin-top: 20px;
@@ -148,7 +145,6 @@ svg {
 </style>
 </head>
 
-<!-- правка 5: тёмная тема по умолчанию -->
 <body class="dark">
 
 <div class="card">
@@ -159,15 +155,13 @@ svg {
     <h1>Генератор паролей</h1>
 
     <div>
-        <!-- правка 4: span с классом для цвета -->
         <span class="length-label">Длина:</span>
         <input type="number" id="length" value="10" min="6" max="64">
     </div>
 
     <div class="password-container">
         <div class="password" id="result"></div>
-        <!-- правка 1: кнопка копирования с иконкой -->
-        <button class="copy-btn" onclick="copyPassword()" id="copyBtn">
+        <button class="copy-btn" onclick="copyPassword()">
             <svg id="copyIcon" viewBox="0 0 24 24">
                 <path d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/>
             </svg>
@@ -234,7 +228,6 @@ function generatePassword() {
     document.getElementById("result").textContent = password;
 }
 
-// правка 1: смена иконки на галочку при копировании
 function copyPassword() {
     const text = document.getElementById("result").textContent;
     if (!text) return;
