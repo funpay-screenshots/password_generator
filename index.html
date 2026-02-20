@@ -64,12 +64,9 @@ h1 {
     color: var(--text);
 }
 
-/* Стили для подписи "Длина" */
-.label {
+.length-label {
     color: var(--text);
-    font-size: 15px;
-    transition: 0.25s ease;
-    margin-right: 5px;
+    margin-right: 8px;
 }
 
 input[type="number"] {
@@ -81,7 +78,6 @@ input[type="number"] {
     font-size: 15px;
     background: transparent;
     color: var(--text);
-    transition: 0.25s ease;
 }
 
 .password-container {
@@ -100,7 +96,6 @@ input[type="number"] {
     min-height: 24px;
     display: flex;
     align-items: center;
-    transition: 0.25s ease;
 }
 
 .copy-btn {
@@ -144,7 +139,6 @@ svg {
     width: 18px;
     height: 18px;
     fill: var(--text);
-    transition: 0.25s ease;
 }
 
 .copy-btn svg {
@@ -163,7 +157,7 @@ svg {
     <h1>Генератор паролей</h1>
 
     <div>
-        <span class="label">Длина:</span>
+        <span class="length-label">Длина:</span>
         <input type="number" id="length" value="10" min="6" max="64">
     </div>
 
@@ -183,7 +177,7 @@ svg {
 function generatePassword() {
     const lengthInput = document.getElementById("length");
     let length = parseInt(lengthInput.value);
-    if (isNaN(length) || length < 6) length = 6;
+    if (length < 6) length = 6;
 
     const upper = "ABCDEFGHKNOPQRSTUVWXYZ";
     const lower = "abcdefghkmnopqrstuvwxyz";
@@ -242,14 +236,17 @@ function copyPassword(button) {
     
     navigator.clipboard.writeText(text);
     
+    // Сохраняем оригинальную иконку
     const originalSvg = button.innerHTML;
     
+    // Меняем на галочку (цвет автоматически подстраивается через CSS var(--text))
     button.innerHTML = `
         <svg viewBox="0 0 24 24">
             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
         </svg>
     `;
     
+    // Возвращаем оригинальную иконку через 1.5 секунды
     setTimeout(() => {
         button.innerHTML = originalSvg;
     }, 1500);
@@ -287,6 +284,7 @@ function updateIcon() {
     }
 }
 
+// Генерируем пароль при загрузке страницы
 window.onload = function() {
     generatePassword();
     updateIcon();
