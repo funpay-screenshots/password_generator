@@ -64,25 +64,30 @@ h1 {
     color: var(--text);
 }
 
-.length-label {
-    color: var(--text);
-    margin-right: 8px;
-}
-
+/* правка 3: border совпадает с фоном карточки */
 input[type="number"] {
     width: 55px;
     padding: 8px;
     border-radius: 12px;
-    border: 1px solid var(--border);
+    border: 1px solid var(--card);
     text-align: center;
     font-size: 15px;
     background: transparent;
     color: var(--text);
 }
 
+/* правка 4: слово "длина" цвет как у пароля */
+.length-label {
+    color: var(--text);
+}
+
+/* правка 2: поле пароля в 1.5 раза уже (360px / 1.5 = 240px, минус padding карточки) */
 .password-container {
     position: relative;
     margin-top: 20px;
+    width: calc(100% / 1.5);
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .password {
@@ -140,14 +145,11 @@ svg {
     height: 18px;
     fill: var(--text);
 }
-
-.copy-btn svg {
-    pointer-events: none;
-}
 </style>
 </head>
 
-<body>
+<!-- правка 5: тёмная тема по умолчанию -->
+<body class="dark">
 
 <div class="card">
     <button class="theme-toggle" onclick="toggleTheme()">
@@ -157,13 +159,15 @@ svg {
     <h1>Генератор паролей</h1>
 
     <div>
+        <!-- правка 4: span с классом для цвета -->
         <span class="length-label">Длина:</span>
         <input type="number" id="length" value="10" min="6" max="64">
     </div>
 
     <div class="password-container">
         <div class="password" id="result"></div>
-        <button class="copy-btn" onclick="copyPassword(this)">
+        <!-- правка 1: кнопка копирования с иконкой -->
+        <button class="copy-btn" onclick="copyPassword()" id="copyBtn">
             <svg id="copyIcon" viewBox="0 0 24 24">
                 <path d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/>
             </svg>
@@ -182,7 +186,7 @@ function generatePassword() {
     const upper = "ABCDEFGHKNOPQRSTUVWXYZ";
     const lower = "abcdefghkmnopqrstuvwxyz";
     const digits = "0123456789";
-    const specials = "&#%$@?";
+    const specials = "& #%$@?".replace(" ", "");
     const allMiddle = upper + lower + digits + specials;
 
     function randomChar(set) {
@@ -230,25 +234,17 @@ function generatePassword() {
     document.getElementById("result").textContent = password;
 }
 
-function copyPassword(button) {
+// правка 1: смена иконки на галочку при копировании
+function copyPassword() {
     const text = document.getElementById("result").textContent;
     if (!text) return;
-    
     navigator.clipboard.writeText(text);
-    
-    // Сохраняем оригинальную иконку
-    const originalSvg = button.innerHTML;
-    
-    // Меняем на галочку (цвет автоматически подстраивается через CSS var(--text))
-    button.innerHTML = `
-        <svg viewBox="0 0 24 24">
-            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-        </svg>
-    `;
-    
-    // Возвращаем оригинальную иконку через 1.5 секунды
+
+    const icon = document.getElementById("copyIcon");
+    icon.innerHTML = `<polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+
     setTimeout(() => {
-        button.innerHTML = originalSvg;
+        icon.innerHTML = `<path d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/>`;
     }, 1500);
 }
 
@@ -261,7 +257,8 @@ function updateIcon() {
     const icon = document.getElementById("themeIcon");
     if (document.body.classList.contains("dark")) {
         icon.innerHTML = `
-            <path d="M21 12.79A9 9 0 0 1 11.21 3 7 7 0 1 0 21 12.79z"/>
+            <path d="M21 12.79A9 9 0 0 1 11.21 3
+            7 7 0 1 0 21 12.79z"/>
         `;
     } else {
         icon.innerHTML = `
@@ -284,11 +281,7 @@ function updateIcon() {
     }
 }
 
-// Генерируем пароль при загрузке страницы
-window.onload = function() {
-    generatePassword();
-    updateIcon();
-};
+updateIcon();
 </script>
 
 </body>
