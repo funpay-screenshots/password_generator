@@ -135,6 +135,10 @@ svg {
     height: 18px;
     fill: var(--text);
 }
+
+.copy-btn svg {
+    pointer-events: none;
+}
 </style>
 </head>
 
@@ -154,8 +158,8 @@ svg {
 
     <div class="password-container">
         <div class="password" id="result"></div>
-        <button class="copy-btn" onclick="copyPassword()">
-            <svg viewBox="0 0 24 24">
+        <button class="copy-btn" onclick="copyPassword(this)">
+            <svg id="copyIcon" viewBox="0 0 24 24">
                 <path d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/>
             </svg>
         </button>
@@ -173,7 +177,7 @@ function generatePassword() {
     const upper = "ABCDEFGHKNOPQRSTUVWXYZ";
     const lower = "abcdefghkmnopqrstuvwxyz";
     const digits = "0123456789";
-    const specials = "& #%$@?".replace(" ", "");
+    const specials = "&#%$@?";
     const allMiddle = upper + lower + digits + specials;
 
     function randomChar(set) {
@@ -221,10 +225,26 @@ function generatePassword() {
     document.getElementById("result").textContent = password;
 }
 
-function copyPassword() {
+function copyPassword(button) {
     const text = document.getElementById("result").textContent;
     if (!text) return;
+    
     navigator.clipboard.writeText(text);
+    
+    // Сохраняем оригинальную иконку
+    const originalSvg = button.innerHTML;
+    
+    // Меняем на галочку (цвет автоматически подстраивается через CSS var(--text))
+    button.innerHTML = `
+        <svg viewBox="0 0 24 24">
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+        </svg>
+    `;
+    
+    // Возвращаем оригинальную иконку через 1.5 секунды
+    setTimeout(() => {
+        button.innerHTML = originalSvg;
+    }, 1500);
 }
 
 function toggleTheme() {
@@ -236,8 +256,7 @@ function updateIcon() {
     const icon = document.getElementById("themeIcon");
     if (document.body.classList.contains("dark")) {
         icon.innerHTML = `
-            <path d="M21 12.79A9 9 0 0 1 11.21 3
-            7 7 0 1 0 21 12.79z"/>
+            <path d="M21 12.79A9 9 0 0 1 11.21 3 7 7 0 1 0 21 12.79z"/>
         `;
     } else {
         icon.innerHTML = `
@@ -260,7 +279,11 @@ function updateIcon() {
     }
 }
 
-updateIcon();
+// Генерируем пароль при загрузке страницы
+window.onload = function() {
+    generatePassword();
+    updateIcon();
+};
 </script>
 
 </body>
