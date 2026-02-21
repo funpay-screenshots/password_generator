@@ -73,7 +73,7 @@ body {
     transition: background 0.15s;
 }
 .icon-btn:hover { background: var(--muted); }
-.icon-btn svg { width: 18px; height: 18px; fill: var(--text); }
+.icon-btn svg { width: 20px; height: 20px; fill: var(--text); display: block; }
 
 h1 {
     margin-bottom: 24px;
@@ -141,7 +141,7 @@ h1 {
     word-break: break-all;
     user-select: all;
     color: var(--text);
-    min-height: 24px;
+    min-height: 46px;
     display: flex;
     align-items: center;
 }
@@ -392,7 +392,7 @@ button.generate:hover { opacity: 0.85; }
             </svg>
         </button>
         <button class="icon-btn" onclick="toggleTheme()" title="Тема">
-            <svg id="themeIcon" viewBox="0 0 24 24"></svg>
+            <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="none"></svg>
         </button>
     </div>
 
@@ -830,13 +830,17 @@ function toggleTheme() {
 function updateIcon() {
     var icon = document.getElementById("themeIcon");
     if (document.body.classList.contains("dark")) {
+        // Moon — fill only
+        icon.setAttribute("fill", "var(--text)");
+        icon.setAttribute("stroke", "none");
         icon.innerHTML = '<path d="M21 12.79A9 9 0 0 1 11.21 3 7 7 0 1 0 21 12.79z"/>';
     } else {
+        // Sun — stroke only
+        icon.setAttribute("fill", "none");
+        icon.setAttribute("stroke", "var(--text)");
+        icon.setAttribute("stroke-width", "2");
+        icon.setAttribute("stroke-linecap", "round");
         icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
-        icon.querySelectorAll("line").forEach(function(l) {
-            l.setAttribute("stroke", "currentColor");
-            l.setAttribute("stroke-width", "2");
-        });
     }
 }
 
