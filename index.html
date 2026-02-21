@@ -26,17 +26,20 @@
     --button-text: #000;
 }
 
+* { box-sizing: border-box; }
+
 body {
     margin: 0;
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     background: var(--bg);
     font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-    transition: 0.25s ease;
+    transition: background 0.25s ease, color 0.25s ease;
 }
 
+/* ── Main card ── */
 .card {
     position: relative;
     background: var(--card);
@@ -45,17 +48,32 @@ body {
     box-shadow: 0 10px 30px rgba(0,0,0,0.08);
     width: 360px;
     text-align: center;
-    transition: 0.25s ease;
+    transition: background 0.25s ease;
 }
 
-.theme-toggle {
+/* ── Top-right icon buttons ── */
+.top-actions {
     position: absolute;
     top: 18px;
     right: 18px;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.icon-btn {
     background: none;
     border: none;
     cursor: pointer;
+    padding: 4px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
 }
+.icon-btn:hover { background: var(--muted); }
+.icon-btn svg { width: 18px; height: 18px; fill: var(--text); }
 
 h1 {
     margin-bottom: 24px;
@@ -64,9 +82,7 @@ h1 {
     color: var(--text);
 }
 
-.length-label {
-    color: var(--text);
-}
+.length-label { color: var(--text); }
 
 .number-input-wrap {
     display: inline-flex;
@@ -75,7 +91,6 @@ h1 {
     border-radius: 12px;
     background: var(--card);
     padding: 2px 3px;
-    gap: 0px;
 }
 
 .number-input-wrap input[type="number"] {
@@ -89,12 +104,8 @@ h1 {
     -moz-appearance: textfield;
     outline: none;
 }
-
 .number-input-wrap input[type="number"]::-webkit-inner-spin-button,
-.number-input-wrap input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
+.number-input-wrap input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 
 .num-btn {
     background: transparent;
@@ -112,10 +123,7 @@ h1 {
     transition: background 0.15s;
     flex-shrink: 0;
 }
-
-.num-btn:hover {
-    background: var(--muted);
-}
+.num-btn:hover { background: var(--muted); }
 
 .password-container {
     position: relative;
@@ -152,19 +160,10 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: 0.2s ease;
+    transition: transform 0.2s ease;
 }
-
-.copy-btn:hover {
-    transform: translateY(-50%) scale(1.08);
-}
-
-.copy-btn svg {
-    width: 18px;
-    height: 18px;
-    fill: var(--text);
-    stroke: var(--text);
-}
+.copy-btn:hover { transform: translateY(-50%) scale(1.08); }
+.copy-btn svg { width: 18px; height: 18px; }
 
 button.generate {
     margin-top: 20px;
@@ -175,27 +174,227 @@ button.generate {
     cursor: pointer;
     background: var(--button);
     color: var(--button-text);
-    transition: 0.2s;
+    transition: opacity 0.2s;
+}
+button.generate:hover { opacity: 0.85; }
+
+/* ── Settings overlay ── */
+.settings-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+.settings-overlay.open { display: flex; }
+
+.settings-panel {
+    background: var(--card);
+    border-radius: 24px;
+    padding: 32px;
+    width: 100%;
+    max-width: 400px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    position: relative;
+    color: var(--text);
 }
 
-button.generate:hover {
-    opacity: 0.85;
+.settings-panel h2 {
+    margin: 0 0 24px;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--text);
 }
 
-.theme-toggle svg {
-    width: 18px;
-    height: 18px;
-    fill: var(--text);
+.settings-close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 8px;
+    display: flex;
+    transition: background 0.15s;
 }
+.settings-close:hover { background: var(--muted); }
+.settings-close svg { width: 18px; height: 18px; fill: var(--text); }
+
+.s-section {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+    opacity: 0.4;
+    margin: 20px 0 10px;
+}
+.s-section:first-of-type { margin-top: 0; }
+
+.s-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 12px;
+}
+
+.s-label {
+    font-size: 14px;
+    color: var(--text);
+    flex: 1;
+    line-height: 1.3;
+}
+.s-sublabel {
+    font-size: 12px;
+    opacity: 0.45;
+    display: block;
+    margin-top: 1px;
+}
+
+.s-stepper {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--card);
+    padding: 1px 2px;
+    flex-shrink: 0;
+}
+.s-stepper input[type="number"] {
+    width: 28px;
+    padding: 5px 0;
+    border: none;
+    text-align: center;
+    font-size: 14px;
+    background: transparent;
+    color: var(--text);
+    -moz-appearance: textfield;
+    outline: none;
+}
+.s-stepper input[type="number"]::-webkit-inner-spin-button,
+.s-stepper input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+.s-step-btn {
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-size: 15px;
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+    flex-shrink: 0;
+}
+.s-step-btn:hover { background: var(--muted); }
+
+.s-toggle {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+}
+.s-toggle input { opacity: 0; width: 0; height: 0; }
+.s-toggle-track {
+    position: absolute;
+    inset: 0;
+    border-radius: 11px;
+    background: var(--border);
+    transition: background 0.2s;
+    cursor: pointer;
+}
+.s-toggle input:checked + .s-toggle-track { background: var(--button); }
+.s-toggle-track::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    top: 3px;
+    left: 3px;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.s-toggle input:checked + .s-toggle-track::after { transform: translateX(18px); }
+
+.s-textarea {
+    width: 100%;
+    background: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    padding: 8px 10px;
+    resize: none;
+    outline: none;
+    transition: border-color 0.15s;
+    letter-spacing: 0.04em;
+}
+.s-textarea:focus { border-color: var(--text); }
+
+.s-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 20px 0;
+}
+
+.s-save {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    background: var(--button);
+    color: var(--button-text);
+    margin-top: 8px;
+    transition: opacity 0.2s;
+}
+.s-save:hover { opacity: 0.85; }
+
+.s-reset {
+    display: block;
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--text);
+    opacity: 0.4;
+    cursor: pointer;
+    background: none;
+    border: none;
+    width: 100%;
+    transition: opacity 0.15s;
+}
+.s-reset:hover { opacity: 0.7; }
 </style>
 </head>
 
 <body class="dark">
 
+<!-- ── Main card ── -->
 <div class="card">
-    <button class="theme-toggle" onclick="toggleTheme()">
-        <svg id="themeIcon" viewBox="0 0 24 24"></svg>
-    </button>
+    <div class="top-actions">
+        <button class="icon-btn" onclick="openSettings()" title="Настройки">
+            <svg viewBox="0 0 24 24">
+                <path d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.02 7.02 0 0 0-1.62-.94l-.36-2.54A.48.48 0 0 0 14 2h-4a.48.48 0 0 0-.48.41l-.36 2.54a7.1 7.1 0 0 0-1.62.94l-2.39-.96a.48.48 0 0 0-.59.22L2.64 8.47a.47.47 0 0 0 .12.61l2.03 1.58c-.05.3-.07.62-.07.94s.02.64.07.94L2.76 14.12a.47.47 0 0 0-.12.6l1.92 3.33c.12.22.37.3.59.22l2.39-.96c.5.36 1.04.67 1.62.94l.36 2.54c.06.28.31.48.6.48h4c.29 0 .54-.2.59-.48l.36-2.54a7.1 7.1 0 0 0 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.33a.47.47 0 0 0-.12-.6l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/>
+            </svg>
+        </button>
+        <button class="icon-btn" onclick="toggleTheme()" title="Тема">
+            <svg id="themeIcon" viewBox="0 0 24 24"></svg>
+        </button>
+    </div>
 
     <h1>Генератор паролей</h1>
 
@@ -220,207 +419,408 @@ button.generate:hover {
     <button class="generate" onclick="generatePassword()">Сгенерировать</button>
 </div>
 
+<!-- ── Settings overlay ── -->
+<div class="settings-overlay" id="settingsOverlay" onclick="overlayClick(event)">
+    <div class="settings-panel">
+        <h2>Настройки пароля</h2>
+        <button class="settings-close" onclick="closeSettings()">
+            <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke="var(--text)" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+        </button>
+
+        <div class="s-section">Наборы символов</div>
+
+        <div class="s-row" style="align-items:flex-start;flex-direction:column;gap:6px">
+            <span class="s-label">Заглавные буквы</span>
+            <textarea class="s-textarea" id="cfg-upper" rows="1"></textarea>
+        </div>
+        <div class="s-row" style="align-items:flex-start;flex-direction:column;gap:6px">
+            <span class="s-label">Строчные буквы</span>
+            <textarea class="s-textarea" id="cfg-lower" rows="1"></textarea>
+        </div>
+        <div class="s-row" style="align-items:flex-start;flex-direction:column;gap:6px">
+            <span class="s-label">Цифры</span>
+            <textarea class="s-textarea" id="cfg-digits" rows="1"></textarea>
+        </div>
+        <div class="s-row" style="align-items:flex-start;flex-direction:column;gap:6px">
+            <span class="s-label">Спецсимволы</span>
+            <textarea class="s-textarea" id="cfg-specials" rows="1"></textarea>
+        </div>
+        <div class="s-row" style="align-items:flex-start;flex-direction:column;gap:6px">
+            <span class="s-label">Запрещены на краях
+                <span class="s-sublabel">Не могут быть первым или последним символом</span>
+            </span>
+            <textarea class="s-textarea" id="cfg-forbidden" rows="1"></textarea>
+        </div>
+
+        <hr class="s-divider">
+        <div class="s-section">Цифры</div>
+
+        <div class="s-row">
+            <span class="s-label">Минимум</span>
+            <div class="s-stepper">
+                <button class="s-step-btn" onclick="step('cfg-digits-min',-1)">−</button>
+                <input type="number" id="cfg-digits-min" min="0" max="20">
+                <button class="s-step-btn" onclick="step('cfg-digits-min',1)">+</button>
+            </div>
+        </div>
+        <div class="s-row">
+            <span class="s-label">Максимум</span>
+            <div class="s-stepper">
+                <button class="s-step-btn" onclick="step('cfg-digits-max',-1)">−</button>
+                <input type="number" id="cfg-digits-max" min="0" max="20">
+                <button class="s-step-btn" onclick="step('cfg-digits-max',1)">+</button>
+            </div>
+        </div>
+
+        <hr class="s-divider">
+        <div class="s-section">Строчные буквы</div>
+
+        <div class="s-row">
+            <span class="s-label">Минимум</span>
+            <div class="s-stepper">
+                <button class="s-step-btn" onclick="step('cfg-lower-min',-1)">−</button>
+                <input type="number" id="cfg-lower-min" min="0" max="20">
+                <button class="s-step-btn" onclick="step('cfg-lower-min',1)">+</button>
+            </div>
+        </div>
+        <div class="s-row">
+            <span class="s-label">Максимум</span>
+            <div class="s-stepper">
+                <button class="s-step-btn" onclick="step('cfg-lower-max',-1)">−</button>
+                <input type="number" id="cfg-lower-max" min="0" max="20">
+                <button class="s-step-btn" onclick="step('cfg-lower-max',1)">+</button>
+            </div>
+        </div>
+
+        <hr class="s-divider">
+        <div class="s-section">Заглавные буквы</div>
+
+        <div class="s-row">
+            <span class="s-label">Макс. доля от длины пароля, %
+                <span class="s-sublabel">Например 67 = не более 67% символов заглавные</span>
+            </span>
+            <div class="s-stepper">
+                <button class="s-step-btn" onclick="step('cfg-upper-frac',-5)">−</button>
+                <input type="number" id="cfg-upper-frac" min="10" max="100" style="width:36px">
+                <button class="s-step-btn" onclick="step('cfg-upper-frac',5)">+</button>
+            </div>
+        </div>
+
+        <hr class="s-divider">
+        <div class="s-section">Спецсимволы</div>
+
+        <div class="s-row">
+            <span class="s-label">Минимум</span>
+            <div class="s-stepper">
+                <button class="s-step-btn" onclick="step('cfg-spec-min',-1)">−</button>
+                <input type="number" id="cfg-spec-min" min="0" max="20">
+                <button class="s-step-btn" onclick="step('cfg-spec-min',1)">+</button>
+            </div>
+        </div>
+        <div class="s-row">
+            <span class="s-label">Максимум</span>
+            <div class="s-stepper">
+                <button class="s-step-btn" onclick="step('cfg-spec-max',-1)">−</button>
+                <input type="number" id="cfg-spec-max" min="0" max="20">
+                <button class="s-step-btn" onclick="step('cfg-spec-max',1)">+</button>
+            </div>
+        </div>
+        <div class="s-row">
+            <span class="s-label">Разрешить повтор одного символа</span>
+            <label class="s-toggle">
+                <input type="checkbox" id="cfg-spec-repeat">
+                <span class="s-toggle-track"></span>
+            </label>
+        </div>
+        <div class="s-row">
+            <span class="s-label">Разрешить два спецсимвола подряд</span>
+            <label class="s-toggle">
+                <input type="checkbox" id="cfg-spec-adjacent">
+                <span class="s-toggle-track"></span>
+            </label>
+        </div>
+
+        <hr class="s-divider">
+
+        <button class="s-save" onclick="saveSettings()">Сохранить</button>
+        <button class="s-reset" onclick="resetSettings()">Сбросить к значениям по умолчанию</button>
+    </div>
+</div>
+
 <script>
+// ============================================================
+//  КОНФИГУРАЦИЯ ПО УМОЛЧАНИЮ
+//  Пользовательские изменения сохраняются в localStorage
+//  и автоматически применяются при следующем открытии сайта
+// ============================================================
+var DEFAULT_CONFIG = {
+    chars: {
+        upper:    "ABCDEFGHKNOPQRSTUVWXYZ",
+        lower:    "abcdefghkmnopqrstuvwxyz",
+        digits:   "0123456789",
+        specials: "&#%$@",
+    },
+    forbiddenEdge: "VTYJ",
+    limits: {
+        digits:   { min: 2, max: 2 },
+        lower:    { min: 2, max: 3 },
+        upper:    { maxFraction: 0.67 },
+        specials: { min: 1, max: 2, allowRepeat: false, allowAdjacent: false },
+    },
+};
+// ============================================================
+
+var PWD_CONFIG = deepClone(DEFAULT_CONFIG);
+var LS_KEY = "pwdgen_config";
+
+function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
+
+function loadConfig() {
+    try {
+        var saved = localStorage.getItem(LS_KEY);
+        if (!saved) return;
+        var p = JSON.parse(saved);
+        PWD_CONFIG.chars         = Object.assign({}, DEFAULT_CONFIG.chars, p.chars || {});
+        PWD_CONFIG.forbiddenEdge = p.forbiddenEdge !== undefined ? p.forbiddenEdge : DEFAULT_CONFIG.forbiddenEdge;
+        var pl = p.limits || {};
+        PWD_CONFIG.limits.digits   = Object.assign({}, DEFAULT_CONFIG.limits.digits,   pl.digits   || {});
+        PWD_CONFIG.limits.lower    = Object.assign({}, DEFAULT_CONFIG.limits.lower,    pl.lower    || {});
+        PWD_CONFIG.limits.upper    = Object.assign({}, DEFAULT_CONFIG.limits.upper,    pl.upper    || {});
+        PWD_CONFIG.limits.specials = Object.assign({}, DEFAULT_CONFIG.limits.specials, pl.specials || {});
+    } catch(e) {}
+}
+
+function persistConfig() {
+    localStorage.setItem(LS_KEY, JSON.stringify(PWD_CONFIG));
+}
+
+// ── Settings panel ───────────────────────────────────────────
+
+function openSettings() {
+    document.getElementById("cfg-upper").value     = PWD_CONFIG.chars.upper;
+    document.getElementById("cfg-lower").value     = PWD_CONFIG.chars.lower;
+    document.getElementById("cfg-digits").value    = PWD_CONFIG.chars.digits;
+    document.getElementById("cfg-specials").value  = PWD_CONFIG.chars.specials;
+    document.getElementById("cfg-forbidden").value = PWD_CONFIG.forbiddenEdge;
+
+    document.getElementById("cfg-digits-min").value  = PWD_CONFIG.limits.digits.min;
+    document.getElementById("cfg-digits-max").value  = PWD_CONFIG.limits.digits.max;
+    document.getElementById("cfg-lower-min").value   = PWD_CONFIG.limits.lower.min;
+    document.getElementById("cfg-lower-max").value   = PWD_CONFIG.limits.lower.max;
+    document.getElementById("cfg-upper-frac").value  = Math.round(PWD_CONFIG.limits.upper.maxFraction * 100);
+    document.getElementById("cfg-spec-min").value    = PWD_CONFIG.limits.specials.min;
+    document.getElementById("cfg-spec-max").value    = PWD_CONFIG.limits.specials.max;
+    document.getElementById("cfg-spec-repeat").checked   = PWD_CONFIG.limits.specials.allowRepeat;
+    document.getElementById("cfg-spec-adjacent").checked = PWD_CONFIG.limits.specials.allowAdjacent;
+
+    document.getElementById("settingsOverlay").classList.add("open");
+}
+
+function closeSettings() {
+    document.getElementById("settingsOverlay").classList.remove("open");
+}
+
+function overlayClick(e) {
+    if (e.target === document.getElementById("settingsOverlay")) closeSettings();
+}
+
+function saveSettings() {
+    var upper    = document.getElementById("cfg-upper").value.trim();
+    var lower    = document.getElementById("cfg-lower").value.trim();
+    var digits   = document.getElementById("cfg-digits").value.trim();
+    var specials = document.getElementById("cfg-specials").value.trim();
+    var forbidden = document.getElementById("cfg-forbidden").value.trim();
+
+    if (!upper || !lower || !digits || !specials) {
+        alert("Наборы символов не могут быть пустыми.");
+        return;
+    }
+
+    var dMin  = clampInt("cfg-digits-min", 0, 20);
+    var dMax  = Math.max(clampInt("cfg-digits-max", 0, 20), dMin);
+    var lMin  = clampInt("cfg-lower-min",  0, 20);
+    var lMax  = Math.max(clampInt("cfg-lower-max",  0, 20), lMin);
+    var uFrac = clampInt("cfg-upper-frac", 10, 100);
+    var sMin  = clampInt("cfg-spec-min",   0, 20);
+    var sMax  = Math.max(clampInt("cfg-spec-max",   0, 20), sMin);
+
+    PWD_CONFIG.chars.upper    = upper;
+    PWD_CONFIG.chars.lower    = lower;
+    PWD_CONFIG.chars.digits   = digits;
+    PWD_CONFIG.chars.specials = specials;
+    PWD_CONFIG.forbiddenEdge  = forbidden;
+    PWD_CONFIG.limits.digits.min  = dMin;
+    PWD_CONFIG.limits.digits.max  = dMax;
+    PWD_CONFIG.limits.lower.min   = lMin;
+    PWD_CONFIG.limits.lower.max   = lMax;
+    PWD_CONFIG.limits.upper.maxFraction = uFrac / 100;
+    PWD_CONFIG.limits.specials.min = sMin;
+    PWD_CONFIG.limits.specials.max = sMax;
+    PWD_CONFIG.limits.specials.allowRepeat   = document.getElementById("cfg-spec-repeat").checked;
+    PWD_CONFIG.limits.specials.allowAdjacent = document.getElementById("cfg-spec-adjacent").checked;
+
+    persistConfig();
+    closeSettings();
+}
+
+function resetSettings() {
+    if (!confirm("Сбросить все настройки к значениям по умолчанию?")) return;
+    PWD_CONFIG = deepClone(DEFAULT_CONFIG);
+    localStorage.removeItem(LS_KEY);
+    closeSettings();
+}
+
+function clampInt(id, min, max) {
+    var v = parseInt(document.getElementById(id).value) || 0;
+    return Math.min(max, Math.max(min, v));
+}
+
+function step(id, delta) {
+    var el = document.getElementById(id);
+    var v = (parseInt(el.value) || 0) + delta;
+    var mn = parseInt(el.min); if (!isNaN(mn)) v = Math.max(mn, v);
+    var mx = parseInt(el.max); if (!isNaN(mx)) v = Math.min(mx, v);
+    el.value = v;
+}
+
+// ── Password generation ──────────────────────────────────────
+
 function changeLength(delta) {
-    const input = document.getElementById("length");
-    let val = parseInt(input.value) + delta;
+    var input = document.getElementById("length");
+    var val = parseInt(input.value) + delta;
     if (val < 6) val = 6;
     if (val > 64) val = 64;
     input.value = val;
 }
 
 function generatePassword() {
-    const lengthInput = document.getElementById("length");
-    let length = parseInt(lengthInput.value);
+    var length = parseInt(document.getElementById("length").value);
     if (length < 6) length = 6;
 
-    const upper = "ABCDEFGHKNOPQRSTUVWXYZ";
-    const lower = "abcdefghkmnopqrstuvwxyz";
-    const digits = "0123456789";
-    const specials = "&#%$@";
-    const forbiddenEdge = "VTYJ";
+    var upper    = PWD_CONFIG.chars.upper;
+    var lower    = PWD_CONFIG.chars.lower;
+    var digits   = PWD_CONFIG.chars.digits;
+    var specials = PWD_CONFIG.chars.specials;
+    var forbiddenEdge = PWD_CONFIG.forbiddenEdge;
+    var limits   = PWD_CONFIG.limits;
+    var allMiddle = upper + lower + digits + specials;
 
-    const allMiddle = upper + lower + digits + specials;
+    function randomChar(set) { return set[Math.floor(Math.random() * set.length)]; }
 
-    function randomChar(set) {
-        return set[Math.floor(Math.random() * set.length)];
-    }
+    function isValid(pwd) {
+        if (![...pwd].some(function(c){ return upper.includes(c); }))    return false;
+        if (![...pwd].some(function(c){ return lower.includes(c); }))    return false;
+        if (![...pwd].some(function(c){ return digits.includes(c); }))   return false;
+        if (![...pwd].some(function(c){ return specials.includes(c); })) return false;
 
-    function isValid(password) {
-        if (!/[A-Z]/.test(password)) return false;
-        if (!/[a-z]/.test(password)) return false;
-        if (!/[0-9]/.test(password)) return false;
-        if (!/[&#%$@]/.test(password)) return false;
+        var digitCount = [...pwd].filter(function(c){ return digits.includes(c); }).length;
+        if (digitCount < limits.digits.min || digitCount > limits.digits.max) return false;
 
-        const digitCount = (password.match(/[0-9]/g) || []).length;
-        if (digitCount < 2) return false;
-        if (digitCount > 2) return false;
+        var lowerCount = [...pwd].filter(function(c){ return lower.includes(c); }).length;
+        if (lowerCount < limits.lower.min || lowerCount > limits.lower.max) return false;
 
-        const lowerCount = (password.match(/[a-z]/g) || []).length;
-        if (lowerCount < 2) return false;
+        var upperCount = [...pwd].filter(function(c){ return upper.includes(c); }).length;
+        if (upperCount > Math.floor(length * limits.upper.maxFraction)) return false;
 
-        const upperCount = (password.match(/[A-Z]/g) || []).length;
-        if (upperCount > Math.floor(length * 2 / 3)) return false;
+        var specMatches = [...pwd].filter(function(c){ return specials.includes(c); });
+        if (specMatches.length < limits.specials.min || specMatches.length > limits.specials.max) return false;
 
-        const specMatches = password.match(/[&#%$@]/g) || [];
-        if (specMatches.length > 2) return false;
+        if (!limits.specials.allowRepeat && specMatches.length !== new Set(specMatches).size) return false;
 
-        // спецсимволы не повторяются
-        if (specMatches.length !== new Set(specMatches).size) return false;
-
-        for (let i = 1; i < password.length; i++) {
-            if (specials.includes(password[i]) && specials.includes(password[i - 1])) return false;
+        for (var i = 1; i < pwd.length; i++) {
+            if (!limits.specials.allowAdjacent && specials.includes(pwd[i]) && specials.includes(pwd[i-1])) return false;
+            if (pwd[i] === pwd[i-1]) return false;
         }
 
-        for (let i = 1; i < password.length; i++) {
-            if (password[i] === password[i - 1]) return false;
-        }
-
-        if (forbiddenEdge.includes(password[0])) return false;
-        if (forbiddenEdge.includes(password[password.length - 1])) return false;
-
-        // первый и последний символ не могут быть одинаковыми
-        if (password[0] === password[password.length - 1]) return false;
-
+        if (forbiddenEdge.includes(pwd[0]) || forbiddenEdge.includes(pwd[pwd.length-1])) return false;
+        if (pwd[0] === pwd[pwd.length-1]) return false;
         return true;
     }
 
-    let password = "";
+    function canAdd(ch, chars, ctr) {
+        if (ch === chars[chars.length-1]) return false;
+        if (digits.includes(ch)   && ctr.dc >= limits.digits.max)  return false;
+        if (lower.includes(ch)    && ctr.lc >= limits.lower.max)   return false;
+        if (specials.includes(ch)) {
+            if (ctr.sc >= limits.specials.max) return false;
+            if (!limits.specials.allowAdjacent && specials.includes(chars[chars.length-1])) return false;
+            if (!limits.specials.allowRepeat   && ctr.us.has(ch)) return false;
+        }
+        return true;
+    }
+
+    function addChar(ch, chars, ctr) {
+        if (digits.includes(ch))   ctr.dc++;
+        if (specials.includes(ch)) { ctr.sc++; ctr.us.add(ch); }
+        if (lower.includes(ch))    ctr.lc++;
+        chars.push(ch);
+    }
+
+    var password = "";
+    var safety = 3000;
 
     do {
-        let chars = [];
-        let usedSpecials = new Set();
-        let digitCount = 0;
+        if (--safety <= 0) break;
 
-        // Первый символ — заглавная, не из forbiddenEdge
-        let firstChar;
-        do {
-            firstChar = randomChar(upper);
-        } while (forbiddenEdge.includes(firstChar));
-        chars.push(firstChar);
+        var chars = [];
+        var ctr = { dc: 0, sc: 0, lc: 0, us: new Set() };
 
-        // Обязательные символы: ровно 2 цифры, 1 спецсимвол, 2 строчных
-        const requiredSpec = randomChar(specials);
-        usedSpecials.add(requiredSpec);
+        var fc; do { fc = randomChar(upper); } while (forbiddenEdge.includes(fc));
+        chars.push(fc);
 
-        const d1 = randomChar(digits);
-        let d2;
-        do { d2 = randomChar(digits); } while (d2 === d1); // цифры не повторяются
+        var d1 = randomChar(digits), d2;
+        do { d2 = randomChar(digits); } while (d2 === d1);
 
-        const required = [
-            d1,
-            d2,
-            requiredSpec,
-            randomChar(lower),
-            randomChar(lower),
-        ];
-
-        // Перемешиваем обязательные символы
-        for (let i = required.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [required[i], required[j]] = [required[j], required[i]];
+        var required = [d1, ...(limits.digits.min >= 2 ? [d2] : []), randomChar(specials), randomChar(lower), randomChar(lower)];
+        for (var i = required.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i+1));
+            var t = required[i]; required[i] = required[j]; required[j] = t;
         }
 
-        // Вставляем обязательные символы
-        for (const req of required) {
+        for (var ri = 0; ri < required.length; ri++) {
             if (chars.length >= length - 1) break;
-
-            if (digits.includes(req)) {
-                if (digitCount >= 2) {
-                    let fallback;
-                    do {
-                        fallback = randomChar(upper + lower);
-                    } while (fallback === chars[chars.length - 1]);
-                    chars.push(fallback);
-                    continue;
-                }
-                digitCount++;
+            var req = required[ri];
+            if (!canAdd(req, chars, ctr)) {
+                var fb; var a = 0;
+                do { fb = randomChar(upper + lower); a++; } while (!canAdd(fb, chars, ctr) && a < 100);
+                if (canAdd(fb, chars, ctr)) addChar(fb, chars, ctr);
+                continue;
             }
-
-            if (specials.includes(req)) {
-                if (usedSpecials.size >= 2 || specials.includes(chars[chars.length - 1])) {
-                    let fallback;
-                    do {
-                        fallback = randomChar(upper + lower);
-                    } while (fallback === chars[chars.length - 1]);
-                    chars.push(fallback);
-                    continue;
-                }
-                usedSpecials.add(req);
-            }
-
-            if (req === chars[chars.length - 1]) {
-                let pad;
-                do {
-                    pad = randomChar(allMiddle);
-                } while (
-                    pad === chars[chars.length - 1] ||
-                    (digits.includes(pad) && digitCount >= 2) ||
-                    (specials.includes(pad) && (usedSpecials.size >= 2 || specials.includes(chars[chars.length - 1]))) ||
-                    (specials.includes(pad) && usedSpecials.has(pad))
-                );
-                if (digits.includes(pad)) digitCount++;
-                if (specials.includes(pad)) usedSpecials.add(pad);
-                if (chars.length < length - 1) chars.push(pad);
-            }
-
-            if (chars.length < length - 1) chars.push(req);
+            addChar(req, chars, ctr);
         }
 
-        // Заполняем оставшиеся позиции — только буквами, если лимиты исчерпаны
         while (chars.length < length - 1) {
-            let next;
-            do {
-                next = randomChar(allMiddle);
-
-                if (digits.includes(next) && digitCount >= 2) continue;
-
-                if (specials.includes(next)) {
-                    if (usedSpecials.size >= 2) continue;
-                    if (specials.includes(chars[chars.length - 1])) continue;
-                    if (usedSpecials.has(next)) continue;
-                }
-
-                if (next === chars[chars.length - 1]) continue;
-
-                break;
-            } while (true);
-
-            if (digits.includes(next)) digitCount++;
-            if (specials.includes(next)) usedSpecials.add(next);
-            chars.push(next);
+            var nx; var a = 0;
+            do { nx = randomChar(allMiddle); a++; if (a > 500) break; } while (!canAdd(nx, chars, ctr));
+            if (!canAdd(nx, chars, ctr)) break;
+            addChar(nx, chars, ctr);
         }
 
-        // Последний символ — заглавная, не повторяет предыдущий, не forbidden и не совпадает с первым
-        let lastChar;
-        do {
-            lastChar = randomChar(upper);
-        } while (
-            lastChar === chars[chars.length - 1] ||
-            forbiddenEdge.includes(lastChar) ||
-            lastChar === chars[0]  // не совпадает с первым символом
-        );
+        var lc; var a = 0;
+        do { lc = randomChar(upper); a++; }
+        while (a < 300 && (lc === chars[chars.length-1] || forbiddenEdge.includes(lc) || lc === chars[0]));
+        chars.push(lc);
 
-        chars.push(lastChar);
         password = chars.join("");
-
     } while (!isValid(password));
 
     document.getElementById("result").textContent = password;
 }
 
+// ── Copy ─────────────────────────────────────────────────────
+
 function copyPassword() {
-    const text = document.getElementById("result").textContent;
+    var text = document.getElementById("result").textContent;
     if (!text) return;
     navigator.clipboard.writeText(text);
-
-    const icon = document.getElementById("copyIcon");
-    icon.innerHTML = `<polyline points="20 6 9 17 4 12" style="stroke: var(--text); stroke-width: 2; fill: none; stroke-linecap: round; stroke-linejoin: round;"/>`;
-
-    setTimeout(() => {
-        icon.innerHTML = `<path fill="var(--text)" stroke="none" d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/>`;
+    var icon = document.getElementById("copyIcon");
+    icon.innerHTML = '<polyline points="20 6 9 17 4 12" style="stroke:var(--text);stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round;"/>';
+    setTimeout(function() {
+        icon.innerHTML = '<path fill="var(--text)" stroke="none" d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/>';
     }, 1500);
 }
+
+// ── Theme ─────────────────────────────────────────────────────
 
 function toggleTheme() {
     document.body.classList.toggle("dark");
@@ -428,30 +828,20 @@ function toggleTheme() {
 }
 
 function updateIcon() {
-    const icon = document.getElementById("themeIcon");
+    var icon = document.getElementById("themeIcon");
     if (document.body.classList.contains("dark")) {
-        icon.innerHTML = `<path d="M21 12.79A9 9 0 0 1 11.21 3 7 7 0 1 0 21 12.79z"/>`;
+        icon.innerHTML = '<path d="M21 12.79A9 9 0 0 1 11.21 3 7 7 0 1 0 21 12.79z"/>';
     } else {
-        icon.innerHTML = `
-            <circle cx="12" cy="12" r="5"/>
-            <g>
-            <line x1="12" y1="1" x2="12" y2="3"/>
-            <line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-            <line x1="1" y1="12" x2="3" y2="12"/>
-            <line x1="21" y1="12" x2="23" y2="12"/>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-            </g>
-        `;
-        icon.querySelectorAll("line").forEach(l => {
+        icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+        icon.querySelectorAll("line").forEach(function(l) {
             l.setAttribute("stroke", "currentColor");
             l.setAttribute("stroke-width", "2");
         });
     }
 }
 
+// ── Init ──────────────────────────────────────────────────────
+loadConfig();
 updateIcon();
 </script>
 
