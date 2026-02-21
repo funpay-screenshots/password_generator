@@ -250,7 +250,7 @@ function generatePassword() {
         if (!/[A-Z]/.test(password)) return false;
         if (!/[a-z]/.test(password)) return false;
         if (!/[0-9]/.test(password)) return false;
-        if (!/[&#%$@?]/.test(password)) return false;
+        if (!/[&#%$@]/.test(password)) return false;
 
         const digitCount = (password.match(/[0-9]/g) || []).length;
         if (digitCount < 2) return false;
@@ -265,6 +265,7 @@ function generatePassword() {
         const specMatches = password.match(/[&#%$@]/g) || [];
         if (specMatches.length > 2) return false;
 
+        // спецсимволы не повторяются
         if (specMatches.length !== new Set(specMatches).size) return false;
 
         for (let i = 1; i < password.length; i++) {
@@ -277,6 +278,9 @@ function generatePassword() {
 
         if (forbiddenEdge.includes(password[0])) return false;
         if (forbiddenEdge.includes(password[password.length - 1])) return false;
+
+        // первый и последний символ не могут быть одинаковыми
+        if (password[0] === password[password.length - 1]) return false;
 
         return true;
     }
@@ -301,7 +305,7 @@ function generatePassword() {
 
         const d1 = randomChar(digits);
         let d2;
-        do { d2 = randomChar(digits); } while (d2 === d1);
+        do { d2 = randomChar(digits); } while (d2 === d1); // цифры не повторяются
 
         const required = [
             d1,
@@ -363,7 +367,7 @@ function generatePassword() {
             if (chars.length < length - 1) chars.push(req);
         }
 
-        // Заполняем оставшиеся позиции
+        // Заполняем оставшиеся позиции — только буквами, если лимиты исчерпаны
         while (chars.length < length - 1) {
             let next;
             do {
@@ -387,13 +391,14 @@ function generatePassword() {
             chars.push(next);
         }
 
-        // Последний символ — заглавная, не повторяет предыдущий и не forbidden
+        // Последний символ — заглавная, не повторяет предыдущий, не forbidden и не совпадает с первым
         let lastChar;
         do {
             lastChar = randomChar(upper);
         } while (
             lastChar === chars[chars.length - 1] ||
-            forbiddenEdge.includes(lastChar)
+            forbiddenEdge.includes(lastChar) ||
+            lastChar === chars[0]  // не совпадает с первым символом
         );
 
         chars.push(lastChar);
